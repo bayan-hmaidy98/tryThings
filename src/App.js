@@ -5,6 +5,8 @@ import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import './App.css';
 import Alert from 'react-bootstrap/Alert';
+import Weather from './components/weather';
+
 
 export class App extends Component {
   
@@ -13,24 +15,34 @@ export class App extends Component {
     this.state = {
       locationInfo: {},
       errMsg: '',
+      weatherInfo: {},
     }
   }
   submitForm = async (event) => {
     try {
     event.preventDefault();
     const city = event.target.cityName.value;
+    // const cityModified = city
+    console.log(city);
     const response = await axios.get (`https://us1.locationiq.com/v1/search.php?key=${process.env.REACT_APP_KEY}&q=${city}&format=json`)
+    const locationInfo = response.data[0]
     
+    const weatherResponse = await axios.get (`${process.env.REACT_APP_SERVER_URL}/weather?searchQuery=${city}&lat=${locationInfo.lat}&lon=${locationInfo.lon}`)
+    const weatherInfo = weatherResponse.data;
+    console.log(weatherResponse);
     this.setState({
-      locationInfo: response.data[0],
+      locationInfo: locationInfo,
       errMsg: '',
+      weatherInfo: weatherInfo,
     })
+    console.log(weatherInfo); 
   }
   catch(error){
     this.setState ({
       errMsg: error.message,
     })
   }
+ 
   }
 
 
@@ -59,7 +71,11 @@ export class App extends Component {
           <p>{this.state.locationInfo.display_name}</p>
           <p>lon {this.state.locationInfo.lon}</p>
           <p>lat {this.state.locationInfo.lat}</p>
-          </div>
+          
+        <Weather 
+          weatherInfo = {this.state.weatherInfo}
+        />
+        </div>
         }
       </div>
     )
